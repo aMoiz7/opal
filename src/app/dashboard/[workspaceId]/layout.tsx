@@ -13,27 +13,33 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import Sidebar from "@/components/ui/global/sidebar";
+import GlobalHeader from "@/components/ui/global/global-header";
 
 interface Props {
   params: { workspaceId: string };
   children: ReactNode;
 }
 
-// Fetch initial data outside of the component
 async function fetchData(workspaceId: string) {
   const auth = await onAuthenticateUser();
 
-  console.log(auth)
-  if (!auth.user?.workspace) redirect("/auth/sign-in");
-
-  if (!auth.user?.workspace.length) redirect("/auth/sign-in");
+  if (!auth.user?.workspace || !auth.user.workspace.length) {
+    redirect("/auth/sign-in");
+    return null;
+  }
 
   const hasAccess = await verifyAccessToWorkspace(workspaceId);
-
   if (hasAccess.status !== 200) {
     redirect(`/dashboard/${auth.user?.workspace[0].id}`);
+    return null;
   }
-  if (!hasAccess.data?.workspace) return null;
+
+  if (!hasAccess.data?.workspace) {
+    console.error("Workspace data is not available.");
+    return null;
+  }
+
+  const work = hasAccess.data.workspace;
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
@@ -45,16 +51,18 @@ async function fetchData(workspaceId: string) {
     queryKey: ["user-videos"],
     queryFn: () => getAllUserVideos(workspaceId),
   });
+
   await queryClient.prefetchQuery({
     queryKey: ["user-workspaces"],
     queryFn: () => getWorkspaces(),
   });
+
   await queryClient.prefetchQuery({
     queryKey: ["user-notifications"],
     queryFn: () => getNotifications(),
   });
 
-  return { queryClient, auth };
+  return { queryClient, auth, work };
 }
 
 const Layout = async ({ params, children }: Props) => {
@@ -63,11 +71,16 @@ const Layout = async ({ params, children }: Props) => {
 
   if (!data) return null;
 
+  const { queryClient, auth, work } = data;
+
   return (
-    <HydrationBoundary state={dehydrate(data.queryClient)}>
-      <div className="flex h-screen w-screen">
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <div className="flex h-screen w-screen ">
         <Sidebar activeWorkspaceId={workspaceId} />
-        {children}
+        <div className=" pt-28  overflow-y-scroll w-screen overflow-x-hidden">
+          <GlobalHeader workspace={work || {}} />
+          <div className="mt-4">{children}</div>
+        </div>
       </div>
     </HydrationBoundary>
   );

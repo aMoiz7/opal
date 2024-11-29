@@ -156,3 +156,70 @@ export const getWorkspaces =async ()=> {
         return {stutus : 403 , error}
     }
 }
+
+export const CreateWorkspace = async(name:string) => {
+        try {
+            const user = await currentUser()
+     
+            if(!user){
+                return {status:404}
+            }
+            const authorized = await client.user.findUnique({
+                where:{
+                    clerkid:user.id
+                },
+                select:{
+                    subscription:{
+                        select:{
+                            plan:true
+                        }
+                    }
+                }
+            })
+
+            if(authorized?.subscription?.plan ==="PRO"){
+                const workspace = await client.user.update({
+                    where: {
+                        clerkid: user.id
+                    },
+                    data: {
+                        workspace: {
+                            create: {
+                                name,
+                                type: 'PUBLIC'
+                            }
+                        }
+                    }
+                })
+                 if(workspace){
+                return {status:201 , data:workspace}
+            }
+            }
+           return {status:401 ,data:"you are not eligible to create workspaces " }
+
+        } catch (error) {
+            return {status:500 , data:error}
+        }
+}
+
+export const renameFolders = async(folderId : string , name :string)=>{
+    try {
+        const folder = await client.folder.update({
+            where:{
+                id:folderId
+            },
+            data:{
+                name
+            }
+        })
+
+        if(folder){
+
+            return{status : 200 , data :"folder renamed"}
+        }
+
+        return {status :400 , data : 'folder not exist'}
+    } catch (error) {
+        return {status :500 , data : error}
+    }
+}
