@@ -7,23 +7,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../avatar";
 import { User } from "lucide-react";
 import { Button } from "../../button";
 import Loader from "../loader/index";
+import { inviteMembers } from "@/actions/workspace";
 
 interface Props {
   workspaceId: string;
 }
 
-const Search = (props: Props) => {
+const Search = ({workspaceId}: Props) => {
   const { query, onSearchQuery, isFetching, onUsers } = useSearch(
     "get-users",
     "USERS"
   );
 
-  // const { mutate, isPending } = useMutationData(
-  //   ['invite-member'],
-  //   (data: { receiverId: string; email: string }) => {
-  //     // Mutation logic here
-  //   }
-  // );
+  const { mutate, isPending } = useMutationData(
+    ["invite-member"],
+    (data: { receiverId: string; email: string }) =>
+      inviteMembers(workspaceId, data.receiverId, data.email)
+  );
 
   return (
     <div className="flex flex-col gap-y-5 ">
@@ -42,7 +42,7 @@ const Search = (props: Props) => {
         <p className="text-center text-sm text-[#a4a4a4]">No users found</p>
       ) : (
         <div>
-          {onUsers.map((user) => (
+          {onUsers.map((user:any) => (
             <div
               key={user.id} // Added a unique key for each user
               className="flex gap-x-3  items-center border-2 w-full p-3 rounded-xl"
@@ -64,11 +64,11 @@ const Search = (props: Props) => {
               <div className="flex-1 flex justify-center items-center">
                 <Button
                   onClick={() => {
-                    // Add invite logic here
+                   mutate({ receiverId: user.id, email: user.email });
                   }}
                   className="w-5/12 font-bold"
                 >
-                  <Loader state={false} color="#0000">
+                  <Loader state={isPending} color="#0000">
                     Invite
                   </Loader>
                 </Button>

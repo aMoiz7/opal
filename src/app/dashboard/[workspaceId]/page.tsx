@@ -7,35 +7,43 @@ interface Props {
   params:{workspaceId :string}
 }
 
-const page = ({params}: Props) => {
+const page = async({ params }: Props) => {
+
+  const workSpaceId = await params.workspaceId
+  console.log(workSpaceId, "params")
   return (
     <div>
-    <Tabs defaultValue="videos" className="mt-6">
-  <div className="flex w-full justify-between items-center">
-    <TabsList className="bg-transparent gap-2 pl-0 ">
-          <TabsTrigger className=" p-[13px] px-6 rounded-full  items-center data-[state=active]:bg-[#252525] " value="videos" >
-             Videos
-          </TabsTrigger>
-           <TabsTrigger className=" p-[13px] px-6 rounded-full  items-center data-[state=active]:bg-[#252525] " value="archive">
-             Archive
-          </TabsTrigger>
+      <Tabs defaultValue="videos" className="mt-6">
+        <div className="flex w-full justify-between items-center">
+          <TabsList className="bg-transparent gap-2 pl-0 ">
+            <TabsTrigger
+              className=" p-[13px] px-6 rounded-full  items-center data-[state=active]:bg-[#252525] "
+              value="videos"
+            >
+              Videos
+            </TabsTrigger>
+            <TabsTrigger
+              className=" p-[13px] px-6 rounded-full  items-center data-[state=active]:bg-[#252525] "
+              value="archive"
+            >
+              Archive
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-x-3">
             <CreateWorkspace />
-            <CreateFolders worksapceId={params.workspace.id} />
+            <CreateFolders workspaceId={workSpaceId} />
           </div>
         </div>
-        
-        <section className="py-9">
-          <TabsContent value='videos'>
-             <Folders workspaceId={params.workspaceId}/>
 
-              </TabsContent> 
+        <section className="py-9">
+          <TabsContent value="videos">
+            <Folders workspaceId={workSpaceId} />
+          </TabsContent>
         </section>
       </Tabs>
     </div>
-  )
+  );
 }
 
 export default page

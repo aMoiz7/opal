@@ -12,7 +12,7 @@ import {
 } from "../../select";
 import { useRouter } from 'next/navigation';
 import { Separator } from '../../separator';
-import { useQueryData } from '@/hooks/userQueryDAta';
+import { useQueryData } from '@/hooks/userQueryData';
 import { getWorkspaces } from '@/actions/workspace';
 import { Notificationprops, WorkspaceProps } from '@/types/index.type';
 import Modal from '../Modal';
@@ -29,6 +29,8 @@ import { Button } from '../../button';
 import Laoder from '../loader';
 import { Sheet, SheetContent, SheetTrigger } from '../../sheet';
 import InfoBar from "../info-bar"
+import { useDispatch } from 'react-redux';
+import { WORKSPACES } from '@/redux/slices/workspaces';
 
 
 
@@ -39,7 +41,7 @@ interface Props {
 const Sidebar = ({ activeWorkspaceId }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
-
+  const dispatch = useDispatch()
   const { data: notification } = useQueryData(
     ["user-notification"],
     getNotifications
@@ -62,6 +64,9 @@ const menuItems = MENU_ITEMS(activeWorkspaceId);
   
   const currentWorkspace = workspaces.workspace.find((s)=> s.id === activeWorkspaceId)
 
+  if (isFetched && workspaces) {
+    dispatch(WORKSPACES({workspaces: workspaces.workspace}))
+  }
 
   const sideBarsection = (
     <div className="bg-zinc-800 flex-none relative p-4 h-full w-[250px] flex flex-col items-center overflow-hidden ">
@@ -87,13 +92,13 @@ const menuItems = MENU_ITEMS(activeWorkspaceId);
             {workspaces.members.length > 0 &&
               workspaces.members.map(
                 (work) =>
-                  work.Workspace && (
+                  work.WorkSpace && (
                     <SelectItem
-                      key={work.Workspace.id}
-                      value={work.Workspace.id}
+                      key={work.WorkSpace.id}
+                      value={work.WorkSpace.id}
                     >
                       {" "}
-                      {work.Workspace.name}
+                      {work.WorkSpace.name}
                     </SelectItem>
                   )
               )}
@@ -171,7 +176,7 @@ const menuItems = MENU_ITEMS(activeWorkspaceId);
 
       <p className="w-full text-[#9D9D9D] font-bold mt-4">Workspace</p>
 
-      {workspaces.workspace.length > 1 && workspaces.members.length === 0 && (
+      {workspaces.WorkSpace.length > 1 && workspaces.members.length === 0 && (
         <div className="w-full mt-[-10px]">
           <p className="text-[#3c3c3c] font-medium text-sm">
             {workspaces.subscription?.paln === "FREE"
@@ -205,14 +210,14 @@ const menuItems = MENU_ITEMS(activeWorkspaceId);
           {workspaces.members.length > 0 &&
             workspaces.members.map((item) => (
               <SidebarItem
-                href={`/dashboard/${item.Workspace.id}`}
-                selected={pathname === `/dashbaord/${item.Workspace.id}`}
-                title={item.Workspace.name}
+                href={`/dashboard/${item.WorkSpace.id}`}
+                selected={pathname === `/dashbaord/${item.WorkSpace.id}`}
+                title={item.WorkSpace.name}
                 notifications={0}
-                key={item.Workspace.name}
+                key={item.WorkSpace.name}
                 icon={
                   <WorkspacePlaceholder>
-                    {item.Workspace.name.charAt(0)}
+                    {item.WorkSpace.name.charAt(0)}
                   </WorkspacePlaceholder>
                 }
               />
@@ -227,17 +232,11 @@ const menuItems = MENU_ITEMS(activeWorkspaceId);
           title={"Upgrade to Pro"}
           description="deciption"
           footer={
-            <Button className="text-sm w-full mt-2">
-              <Laoder state={true}>Upgrade</Laoder>
-            </Button>
+            <PaymentButton/>
           }
         ></GlobalCard>
       )}
     </div>
-
-   
-    
-    
   );
   
   return (

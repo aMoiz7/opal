@@ -66,7 +66,7 @@ async function fetchData(workspaceId: string) {
 }
 
 const Layout = async ({ params, children }: Props) => {
-  const workspaceId = params.workspaceId;
+  const workspaceId = await params.workspaceId;
   const data = await fetchData(workspaceId);
 
   if (!data) return null;
